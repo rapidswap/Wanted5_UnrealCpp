@@ -15,5 +15,11 @@ void UMyGameInstance::Init()
 	// 출력 로그에 메시지 출력.
 	// 언리얼은 UTF16 -> WCHAR만 사용.
 	// 각종 타입으로 변경할 수 있는 헬퍼 함수 제공.
-	UE_LOG(LogTemp, Log, TEXT("Hello Unreal!"));
+	//UE_LOG(LogTemp, Log, TEXT("Hello Unreal!"));
+
+	TCHAR LogCharArray[] = TEXT("Hello Unreal!");
+	UE_LOG(LogTemp, Log, TEXT("%s"), LogCharArray);
+
+	FString LogCharString = LogCharArray;
+	UE_LOG(LogTemp, Log, TEXT("%s"), *LogCharString);
 }

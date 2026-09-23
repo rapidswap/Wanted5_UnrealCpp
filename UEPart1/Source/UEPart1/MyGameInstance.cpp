@@ -5,6 +5,8 @@
 #include "Student.h"
 #include "Teacher.h"
 #include "Staff.h"
+#include "Card.h"
+
 UMyGameInstance::UMyGameInstance()
 {
 	// 기본값 설정.
@@ -51,6 +53,23 @@ void UMyGameInstance::Init()
 			UE_LOG(LogTemp, Log, TEXT("Staff 입니다."));
 		}
 	}
+
+	for (const auto Person : Persons)
+	{
+		const UCard* OwnCard = Person->GetCard();
+		ensure(OwnCard);
+
+		//OwnCard->GetCardType();
+
+		const UEnum* CardEnumType = FindObject<UEnum>(nullptr, TEXT("/Script/UEPart1.ECardType"));
+
+		if (CardEnumType)
+		{
+			FString CardMetaData = CardEnumType->GetDisplayNameTextByValue((int64)OwnCard->GetCardType()).ToString();
+			UE_LOG(LogTemp, Log, TEXT("%s님이 소유한 카드 종류: %s"), *Person->GetName(), *CardMetaData);
+		}
+	}
+
 
 	UE_LOG(LogTemp, Log, TEXT("====================="));
 

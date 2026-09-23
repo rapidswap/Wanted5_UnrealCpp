@@ -7,5 +7,5 @@
 
 void ILessonInterface::DoLesson()
 {
-	UE_LOG(LogTemp,Log,TEXT("수업에 입장합니다."))
+	UE_LOG(LogTemp, Log, TEXT("수업에 입장합니다."));
 }

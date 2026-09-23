@@ -2,7 +2,9 @@
 
 
 #include "MyGameInstance.h"
-
+#include "Student.h"
+#include "Teacher.h"
+#include "Staff.h"
 UMyGameInstance::UMyGameInstance()
 {
 	// 기본값 설정.
@@ -16,68 +18,41 @@ void UMyGameInstance::Init()
 	Super::Init();
 
 	UE_LOG(LogTemp, Log, TEXT("====================="));
+	TArray<UPerson*> Persons =
+	{
+		NewObject<UStudent>(),
+		NewObject<UTeacher>(),
+		NewObject<UStaff>(),
+	};
 
-	// 클래스 정보 가져오기.
-	UClass* ClassRuntime = GetClass();
-	UClass* ClassCompile = UMyGameInstance::StaticClass();
+	
+	// 범위 기반 루프 활용 이름 출력.
+	for (const auto Person : Persons)
+	{
+		UE_LOG(LogTemp, Log, TEXT("구성원 이름:%s"), *Person->GetName());
+	}
 
-	// 두 정보가 같은지 비교.
-	//check(ClassRuntime != ClassCompile);
-	//ensure(ClassRuntime != ClassCompile);
 
-	UE_LOG(LogTemp, Log, TEXT("학교를 담당하는 클래스 이름: %s"), *ClassRuntime->GetName());
-	SchoolName = TEXT("포텐업");
+	// 인터페이스 구현 여부에 따른 수업 참여 구분.
+	// 구현 여부를 확인하는 방법 -> 해당 인터페이스로 형변환(다운 캐스팅).
+	// 다운 캐스팅 - RTTI.
+	for (const auto Person : Persons)
+	{
+		// 형변환을 통한 인터페이스 구현 여부 확인.
+		ILessonInterface* LessonInterface = Cast<ILessonInterface>(Person);
+		// constexpr = 런타임에 확인되는 상수 키워드 Cast함수 f12로 들어가서 확인.
+		if (LessonInterface)
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s님은 수업에 참여할 수 있습니다."), *Person->GetName());
+			LessonInterface->DoLesson();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Staff 입니다."));
+		}
+	}
 
-	UE_LOG(LogTemp, Log, TEXT("학교 이름: %s"), *SchoolName);
-	UE_LOG(LogTemp, Log, TEXT("학교 이름 기본값: %s"), *GetClass()->GetDefaultObject<UMyGameInstance>()->SchoolName);
 	UE_LOG(LogTemp, Log, TEXT("====================="));
-
-	//// 출력 로그에 메시지 출력.
-	//// 언리얼은 UTF16 -> WCHAR만 사용.
-	//// 각종 타입으로 변경할 수 있는 헬퍼 함수 제공.
-	////UE_LOG(LogTemp, Log, TEXT("Hello Unreal!"));
-
-	//TCHAR LogCharArray[] = TEXT("Hello Unreal!");
-	//UE_LOG(LogTemp, Log, TEXT("%s"), LogCharArray);
-
-	//FString LogCharString = LogCharArray;
-	//UE_LOG(LogTemp, Log, TEXT("%s"), *LogCharString);
-
-	//// 문자열 복사.
-	//TCHAR LogCharArrayWithSize[100] = {};
-	//FCString::Strncpy(LogCharArrayWithSize, *LogCharString, LogCharString.Len());
-
-	//UE_LOG(LogTemp, Log, TEXT("%s"), LogCharArrayWithSize);
-
-	//// 문자열 자르기.
-	//if (LogCharString.Contains(TEXT("unreal"), ESearchCase::IgnoreCase))
-	//{
-	//	// 문자열 검색해 시작 인덱스 얻기.
-	//	int32 Index = LogCharString.Find(TEXT("unreal"), ESearchCase::IgnoreCase);
-	//	FString EndString = LogCharString.Mid(Index);
-	//	UE_LOG(LogTemp, Log, TEXT("%s"), *EndString);
-	//}
-
-	//// 문자열 나누기.
-	//FString Left, Right;
-	//if (LogCharString.Split(TEXT(" "), &Left, &Right))
-	//{
-	//	UE_LOG(LogTemp, Log, TEXT("Split Test: %s / %s"), *Left, *Right);
-	//}
-
-	//// 문자열 조함.
-	//int32 IntValue = 40;
-	//float FloatValue = 3.141592f;
-
-	//FString FloatIntString = FString::Printf(TEXT("Int:%d, Float:%f"), IntValue, FloatValue);
-
-	//UE_LOG(LogTemp, Log, TEXT("%s"), *FloatIntString);
-
-	//// FName 특성 살펴보기 - 대소문자 구별하지 않음.
-	//FName Key1(TEXT("PELVIS"));
-	//FName Key2(TEXT("pelvis"));
-
-	//UE_LOG(LogTemp, Log, TEXT("FName 비교 결과: %s"), (Key1 == Key2 ? TEXT("같음.") : TEXT("다름.")));
 
 }
 

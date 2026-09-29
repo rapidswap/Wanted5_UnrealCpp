@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Person.h"
+#include "UObject/Object.h"
 #include "LessonInterface.h"
 #include "Student.generated.h"
 
@@ -11,18 +11,28 @@
  * 
  */
 UCLASS()
-class UEPART1_API UStudent : public UPerson, public ILessonInterface
+class UEPART1_API UStudent : public UObject
 {
 	GENERATED_BODY()
 
 public:
 	UStudent();
 
-	// 알림 메시지를 수신할 함수 선언.
-	void GetNotification(const FString& School, const FString& NewCourseInfo);
+	virtual void Serialize(FArchive& Ar) override;
+
+	// Getter/Setter
+	FORCEINLINE int32 GetOrder() const { return Order; }
+	FORCEINLINE void SetOrder(int32 InOrder)  { Order = InOrder; }
 	
+	FORCEINLINE const FString& GetName() const { return Name; }
+	FORCEINLINE void SetName(const FString& InName) { Name = InName; }
+
 private:
-	// Inherited via ILessonInterface
-	virtual void DoLesson() override;
+	UPROPERTY()
+	int32 Order;
+
+	UPROPERTY()
+	FString Name;
+
 
 };

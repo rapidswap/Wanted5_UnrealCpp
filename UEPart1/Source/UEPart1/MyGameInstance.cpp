@@ -7,6 +7,7 @@
 #include "Staff.h"
 #include "Card.h"
 #include "CourseInfo.h"
+#include "StudentManager.h"
 #include <Algo/Accumulate.h>
 
 // 이름 값을 랜덤으로 생성하는 함수.
@@ -28,6 +29,31 @@ FString MakeRandomName()
 	return RandArray.GetData();
 }
 
+// 객체의 유효성 검사 함수.
+void CheckUObjectIsValid(const UObject* InObject,const FString& InTag)
+{
+	if (InObject->IsValidLowLevel())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] 유효한 오브젝트"), *InTag);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] 유효하지 않은 오브젝트"), *InTag);
+	}
+}
+
+void CheckUObjectIsNull(const UObject* InObject, const FString& InTag)
+{
+	if (InObject==nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] 널 포인터 언리얼 오브젝트"), *InTag);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] 널 포인터가 아닌 언리얼 오브젝트"), *InTag);
+	}
+}
+
 UMyGameInstance::UMyGameInstance()
 {
 	// 기본값 설정.
@@ -39,126 +65,50 @@ void UMyGameInstance::Init()
 {
 	// UMyGameInstance::Init();
 	Super::Init();
+
+	// 객체 생성.
+	NonPropStudent = NewObject<UStudent>();
+	PropStudent = NewObject<UStudent>();
+
+	// 배열에 원소 추가.
+	NonPropStudents.Add(NewObject<UStudent>());
+	PropStudents.Add(NewObject<UStudent>());
+
+	// StudentManager 객체 생성.
+	StudentManager = new FStudentManager(NewObject<UStudent>());
+
+}
+
+void UMyGameInstance::Shutdown()
+{
+	Super::Shutdown();
+
+	// 삭제하기 전에 관리하던 UObject 가져오기.
+	const UStudent* StudentInManager = StudentManager->GetStudent();
+
+	// 메모리 정리.
+	delete StudentManager;
+	StudentManager = nullptr;
+
+	// StudentManager에서 관리하던 UObject 확인.
+	CheckUObjectIsNull(StudentInManager, TEXT("StudentInManager"));
+	CheckUObjectIsValid(StudentInManager, TEXT("StudentInManager"));
+
+	// NonPropStudent 확인
+	CheckUObjectIsNull(NonPropStudent, TEXT("NonPropStudent"));
+	CheckUObjectIsValid(NonPropStudent, TEXT("NonPropStudent"));
 	
-	// TArray 활용.
-	const int32 ArrayNum = 10;
-	TArray<int32> Int32Array;
+	// PropStudent 확인
+	CheckUObjectIsNull(PropStudent, TEXT("PropStudent"));
+	CheckUObjectIsValid(PropStudent, TEXT("PropStudent"));
 
-	for (int32 ix = 1;ix <= ArrayNum;++ix)
-	{
-		Int32Array.Add(ix);
-	}
+	// NonPropStudents 배열 내부의 언리얼 오브젝트 확인.
+	CheckUObjectIsNull(NonPropStudents[0], TEXT("NonPropStudents"));
+	CheckUObjectIsValid(NonPropStudents[0], TEXT("NonPropStudents"));
 
-	// 조건에 부합하는 요소 모두 제거.
-	Int32Array.RemoveAll([](int32 Value) {return Value % 2 == 0;});
+	// PropStudents 배열 내부의 언리얼 오브젝트 확인.
+	CheckUObjectIsNull(PropStudents[0], TEXT("PropStudents"));
+	CheckUObjectIsValid(PropStudents[0], TEXT("PropStudents"));
 
-	// 배열에 요소 한 번에 추가.
-	Int32Array += {2, 4, 6, 8, 10};
 
-	// 두 번째 배열 추가.
-	TArray<int32> Int32ArrayCompare;
-	int32 CArray[] = {1, 3, 5, 7, 9, 2, 4, 6, 8, 10};
-	Int32ArrayCompare.AddUninitialized(ArrayNum);
-	FMemory::Memcpy(Int32ArrayCompare.GetData(), CArray, sizeof(int32) * ArrayNum);
-
-	// 두 배열이 같은지 확인.
-	ensure(Int32Array == Int32ArrayCompare);
-
-	// 배열의 합계 구하기.
-	int32 Sum = 0;
-	for (const int32& Value : Int32Array)
-	{
-		Sum += Value;
-	}
-
-	// 알고리즘을 활용한 합계 구하기.
-	int32 SumByAlgo = Algo::Accumulate(Int32Array, 0);
-
-	ensure(Sum == SumByAlgo);
-
-	// Set 활용.
-	TSet<int32> Int32Set;
-	Int32Set.Reserve(ArrayNum);
-
-	// 데이터 추가.
-	for (int32 Index = 1;Index <= ArrayNum;++Index)
-	{
-		Int32Set.Add(Index);
-	}
-
-	// 제거.
-	Int32Set.Remove(2);
-	Int32Set.Remove(4);
-	Int32Set.Remove(6);
-	Int32Set.Remove(8);
-	Int32Set.Remove(10);
-
-	// 추가.
-	Int32Set.Add(2);
-	Int32Set.Add(4);
-	Int32Set.Add(6); 
-	Int32Set.Add(8);
-	Int32Set.Add(10);
-
-	// 학생 데이터 생성.
-	const int32 StudentNum = 300;
-	for (int32 ix = 1;ix <= StudentNum;++ix)
-	{
-		StudentsData.Emplace(FStudentData(MakeRandomName(),ix));
-	}
-
-	// 학생 데이터를 TArray<FString> 배열로 변환.
-	TArray<FString> AllStudentNames;
-
-	Algo::Transform(StudentsData, AllStudentNames, [](const FStudentData& Value)
-		{
-			return Value.Name;
-		});
-
-	// 배열 요소 수 출력.
-	UE_LOG(LogTemp, Log, TEXT("모든 학생 이름의 수: %d"), AllStudentNames.Num());
-
-	// 학생의 이름을 Set에 저장.
-	// Set은 중복을 허용하지 않음 Key가 곧 Value.
-	TSet<FString> AllUniqueNames;
-	Algo::Transform(StudentsData, AllUniqueNames, [](const FStudentData& Value)
-		{
-			return Value.Name;
-		});
-
-	UE_LOG(LogTemp, Log, TEXT("중복 없는 학생 이름의 수 : %d"), AllUniqueNames.Num());
-
-	// 학생 데이터를 Map으로 변환
-	Algo::Transform(StudentsData, StudentsMap, [](const FStudentData& Value)
-		{
-			return TPair<int32, FString>(Value.Order, Value.Name);
-		});
-	UE_LOG(LogTemp, Log, TEXT("순번에 따른 학생 맵의 레코드 수: %d"), StudentsMap.Num());
-
-	// 이름(문자열)을 키로 사용하는 맵 선언.
-	TMap<FString, int32> StudentMapByUniqueName;
-
-	// 학생 데이터를 Map으로 변환
-	Algo::Transform(StudentsData, StudentMapByUniqueName, [](const FStudentData& Value)
-		{
-			return TPair<FString, int32>(Value.Name, Value.Order);
-		});
-	UE_LOG(LogTemp, Log, TEXT("이름에 따른 학생 맵의 레코드 수: %d"), StudentMapByUniqueName.Num());
-
-	// 검색.
-	const FString TargetName(TEXT("최지연"));
-
-	int32* Result = StudentMapByUniqueName.Find(TargetName);
-	if (Result)
-	{
-		UE_LOG(LogTemp, Log, TEXT("%s 이름의 데이터 확인"), *TargetName);
-	}
-
-	// Test.
-	TSet<FStudentData> StudentSet;
-	for (int32 ix = 1;ix <= StudentNum;++ix)
-	{
-		StudentSet.Emplace(FStudentData(MakeRandomName(), ix));
-	}
-	UE_LOG(LogTemp, Log, TEXT("학생 데이터셋에 저장된 개수: %d"), StudentSet.Num());
 }

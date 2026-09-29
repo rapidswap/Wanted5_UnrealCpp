@@ -6,6 +6,10 @@
 #include "Engine/GameInstance.h"
 #include "MyGameInstance.generated.h"
 
+// 전방 선언.
+class UStudent;
+class FStudentManager;
+
 // 학색 데이터를 관리할 구조체 선언.
 USTRUCT()
 struct FStudentData
@@ -60,14 +64,19 @@ private:
 	// 게임 인스턴스 초기화.
 	virtual void Init() override;
 
+	// 게임 인스턴스 종료 함수.
+	virtual void Shutdown() override;
+
 private:
-	// 학생 데이터를 배열로 관리.
-	TArray<FStudentData> StudentsData;
+	TObjectPtr<UStudent> NonPropStudent;
 
-	// TArray로 UObject 타입을 관리할 때는 UPROPERTY() 매크로 필수.
 	UPROPERTY()
-	TArray<TObjectPtr<class UStudent>> Students;
+	TObjectPtr<UStudent> PropStudent;
 
-	// 키/값을 쌍으로 맵 선언.
-	TMap<int32, FString> StudentsMap;
+	TArray< TObjectPtr<UStudent>> NonPropStudents;
+
+	UPROPERTY()
+	TArray< TObjectPtr<UStudent>> PropStudents;
+
+	FStudentManager* StudentManager=nullptr;
 };

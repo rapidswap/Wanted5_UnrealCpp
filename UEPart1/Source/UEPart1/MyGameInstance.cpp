@@ -9,11 +9,30 @@
 #include "CourseInfo.h"
 #include <Algo/Accumulate.h>
 
+// 이름 값을 랜덤으로 생성하는 함수.
+FString MakeRandomName()
+{
+	TCHAR FirstChar[] = TEXT("김이박최");
+	TCHAR MiddleChar[] = TEXT("상혜지성");
+	TCHAR LastChar[] = TEXT("수은연원");
+
+	TArray<TCHAR> RandArray;
+	// 세 글자로 이름을 만들기 위해 3개의 공간 확보.
+	RandArray.SetNum(3);
+	RandArray[0] = FirstChar[FMath::RandRange(0, 3)];
+	RandArray[1] = MiddleChar[FMath::RandRange(0, 3)];
+	RandArray[2] = LastChar[FMath::RandRange(0, 3)];
+
+
+	// 이름 문자열로 변환해서 반환.
+	return RandArray.GetData();
+}
+
 UMyGameInstance::UMyGameInstance()
 {
 	// 기본값 설정.
 	// 생성자에서 설정하는 기본 값은 CDO 템플릿 객체에 저장됨.
-	SchoolName = TEXT("기본 학교");
+	//SchoolName = TEXT("기본 학교");
 }
 
 void UMyGameInstance::Init()
@@ -56,5 +75,90 @@ void UMyGameInstance::Init()
 	int32 SumByAlgo = Algo::Accumulate(Int32Array, 0);
 
 	ensure(Sum == SumByAlgo);
-}
 
+	// Set 활용.
+	TSet<int32> Int32Set;
+	Int32Set.Reserve(ArrayNum);
+
+	// 데이터 추가.
+	for (int32 Index = 1;Index <= ArrayNum;++Index)
+	{
+		Int32Set.Add(Index);
+	}
+
+	// 제거.
+	Int32Set.Remove(2);
+	Int32Set.Remove(4);
+	Int32Set.Remove(6);
+	Int32Set.Remove(8);
+	Int32Set.Remove(10);
+
+	// 추가.
+	Int32Set.Add(2);
+	Int32Set.Add(4);
+	Int32Set.Add(6); 
+	Int32Set.Add(8);
+	Int32Set.Add(10);
+
+	// 학생 데이터 생성.
+	const int32 StudentNum = 300;
+	for (int32 ix = 1;ix <= StudentNum;++ix)
+	{
+		StudentsData.Emplace(FStudentData(MakeRandomName(),ix));
+	}
+
+	// 학생 데이터를 TArray<FString> 배열로 변환.
+	TArray<FString> AllStudentNames;
+
+	Algo::Transform(StudentsData, AllStudentNames, [](const FStudentData& Value)
+		{
+			return Value.Name;
+		});
+
+	// 배열 요소 수 출력.
+	UE_LOG(LogTemp, Log, TEXT("모든 학생 이름의 수: %d"), AllStudentNames.Num());
+
+	// 학생의 이름을 Set에 저장.
+	// Set은 중복을 허용하지 않음 Key가 곧 Value.
+	TSet<FString> AllUniqueNames;
+	Algo::Transform(StudentsData, AllUniqueNames, [](const FStudentData& Value)
+		{
+			return Value.Name;
+		});
+
+	UE_LOG(LogTemp, Log, TEXT("중복 없는 학생 이름의 수 : %d"), AllUniqueNames.Num());
+
+	// 학생 데이터를 Map으로 변환
+	Algo::Transform(StudentsData, StudentsMap, [](const FStudentData& Value)
+		{
+			return TPair<int32, FString>(Value.Order, Value.Name);
+		});
+	UE_LOG(LogTemp, Log, TEXT("순번에 따른 학생 맵의 레코드 수: %d"), StudentsMap.Num());
+
+	// 이름(문자열)을 키로 사용하는 맵 선언.
+	TMap<FString, int32> StudentMapByUniqueName;
+
+	// 학생 데이터를 Map으로 변환
+	Algo::Transform(StudentsData, StudentMapByUniqueName, [](const FStudentData& Value)
+		{
+			return TPair<FString, int32>(Value.Name, Value.Order);
+		});
+	UE_LOG(LogTemp, Log, TEXT("이름에 따른 학생 맵의 레코드 수: %d"), StudentMapByUniqueName.Num());
+
+	// 검색.
+	const FString TargetName(TEXT("최지연"));
+
+	int32* Result = StudentMapByUniqueName.Find(TargetName);
+	if (Result)
+	{
+		UE_LOG(LogTemp, Log, TEXT("%s 이름의 데이터 확인"), *TargetName);
+	}
+
+	// Test.
+	TSet<FStudentData> StudentSet;
+	for (int32 ix = 1;ix <= StudentNum;++ix)
+	{
+		StudentSet.Emplace(FStudentData(MakeRandomName(), ix));
+	}
+	UE_LOG(LogTemp, Log, TEXT("학생 데이터셋에 저장된 개수: %d"), StudentSet.Num());
+}

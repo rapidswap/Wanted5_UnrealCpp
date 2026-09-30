@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Engine/StreamableManager.h"
 #include "MyGameInstance.generated.h"
 
 // 전방 선언.
@@ -74,8 +75,24 @@ private:
 	// 게임 인스턴스 초기화.
 	virtual void Init() override;
 
+	// 패키지 저장/로드 함수.
+	void SaveStudentPackage() const;
+	void LoadStudentPackage() const;
+	void LoadStudentObject() const;
+
 private:
+	// 패키지 저장에 필요한 이름 값.
+	// /Game: 프로ㅈ게트 경로/Content/
+	inline static const FString PackageName = TEXT("/Game/Student");
+	inline static const FString AssetName = TEXT("TopStudent");
+
 	UPROPERTY()
 	TObjectPtr<class UStudent> StudentSrc;
+
+	// 비동기 에셋 로드에 사용할 매니저.
+	FStreamableManager StreamableManager;
+
+	// 애셋 로드에 사용할 핸들.
+	TSharedPtr<FStreamableHandle> Handle;
 
 };

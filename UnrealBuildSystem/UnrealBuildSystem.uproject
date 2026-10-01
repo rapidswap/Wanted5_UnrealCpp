@@ -5,21 +5,11 @@
 	"Description": "",
 	"Modules": [
 		{
-			"Name": "UEPart1",
+			"Name": "UnrealBuildSystem",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine",
 				"CoreUObject"
-			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "ModelingToolsEditorMode",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
 			]
 		}
 	]
